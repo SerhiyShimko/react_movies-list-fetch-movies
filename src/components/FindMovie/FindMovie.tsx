@@ -19,25 +19,28 @@ export const FindMovie: React.FC<Props> = ({ setMovies, movies }) => {
   const [movie, setMovie] = useState<Movie | null>(null);
 
   const findMovie = useCallback((newValue: string) => {
-    getMovie(newValue).then((response: MovieData | ResponseError) => {
-      isLoading(false);
-      if (response && 'imdbID' in response) {
-        const validMovie: Movie = {
-          title: response.Title,
-          description: response.Plot,
-          imgUrl:
-            response.Poster === 'N/A'
-              ? 'https://via.placeholder.com/360x270.png?text=no%20preview'
-              : response.Poster,
-          imdbUrl: `https://www.imdb.com/title/${response.imdbID}`,
-          imdbId: response.imdbID,
-        };
+    getMovie(newValue)
+      .then((response: MovieData | ResponseError) => {
+        if (response && 'imdbID' in response) {
+          const validMovie: Movie = {
+            title: response.Title,
+            description: response.Plot,
+            imgUrl:
+              response.Poster === 'N/A'
+                ? 'https://via.placeholder.com/360x270.png?text=no%20preview'
+                : response.Poster,
+            imdbUrl: `https://www.imdb.com/title/${response.imdbID}`,
+            imdbId: response.imdbID,
+          };
 
-        setMovie(validMovie);
-      } else {
-        setShowError(response);
-      }
-    });
+          setMovie(validMovie);
+        } else {
+          setShowError(response);
+        }
+      })
+      .finally(() => {
+        isLoading(false);
+      });
   }, []);
 
   return (
@@ -46,8 +49,8 @@ export const FindMovie: React.FC<Props> = ({ setMovies, movies }) => {
         className="find-movie"
         onSubmit={e => {
           e.preventDefault();
-          findMovie(value);
           isLoading(true);
+          findMovie(value);
         }}
       >
         <div className="field">
@@ -74,7 +77,7 @@ export const FindMovie: React.FC<Props> = ({ setMovies, movies }) => {
 
           {showError && (
             <p className="help is-danger" data-cy="errorMessage">
-              Can&apos;t find a movie with such a title
+              {showError.Error}
             </p>
           )}
         </div>
